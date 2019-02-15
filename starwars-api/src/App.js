@@ -2,6 +2,8 @@ import React, { Component } from "react";
 import Searchbar from "./Searchbar/Searchbar";
 import "./App.css";
 import DisplayResults from "./DisplayResults/DisplayResults";
+import Header from "./Header/Header";
+import ErrorBoundary from "./errorBoundary";
 
 class App extends Component {
   constructor() {
@@ -13,6 +15,7 @@ class App extends Component {
   }
 
   searchTerm = (searchTerm, subject) => {
+
     const options = {
       method: "GET",
       headers: {
@@ -28,10 +31,15 @@ class App extends Component {
         return res;
       })
       .then(res => res.json())
-      .then(data =>
+      .then(data => {
+        if(data.results.length<1){
+          this.setState({
+            results: [{name:'Your search returned 0 results'}]
+          })
+        } else{
         this.setState({
           results: data.results
-        })
+        })}}
       )
       .catch(err => {
         console.log(err.message);
@@ -41,7 +49,9 @@ class App extends Component {
   render() {
     console.log("state", this.state.results);
     return (
-      <div>
+      <ErrorBoundary>
+      <div className="main-container">
+        <Header />
         <div className="searchbar-main">
           <Searchbar
             searchTerm={(searchTerm, subject) =>
@@ -51,6 +61,7 @@ class App extends Component {
           <DisplayResults results={this.state.results} />
         </div>
       </div>
+      </ErrorBoundary>
     );
   }
 }
